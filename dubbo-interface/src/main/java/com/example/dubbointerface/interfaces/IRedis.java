@@ -2,5 +2,5 @@ package com.example.dubbointerface.interfaces;
 
 public interface IRedis {
 
-    void add();
+    void add(String ip) throws InterruptedException;
 }

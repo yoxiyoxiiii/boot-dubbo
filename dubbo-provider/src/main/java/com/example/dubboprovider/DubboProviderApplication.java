@@ -27,9 +27,6 @@ public class DubboProviderApplication {
 	private RedisTemplate redisTemplate;
 	@GetMapping
 	public String value() {
-
-
-
         ExecutorService executorService = Executors.newFixedThreadPool(10);
         for (int i= 0 ;i<10;i++) {
             executorService.submit(new Callable<Object>() {

@@ -5,9 +5,7 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
 
 
-      <dubbo:application name="provider-redis"/>
-
-      <dubbo:registry protocol="zookeeper" address="192.168.229.10:2181"/>
-       <dubbo:protocol name="dubbo" port="20885" />
-      <dubbo:service interface="com.example.dubbointerface.interfaces.IRedis" ref="iRedisService" loadbalance="roundrobin"/>
+    <dubbo:application name="customer"/>
+    <dubbo:registry protocol="zookeeper" address="192.168.229.10:2181"/>
+    <dubbo:reference id="iRedis" interface="com.example.dubbointerface.interfaces.IRedis" loadbalance="roundrobin"/>
 </beans>

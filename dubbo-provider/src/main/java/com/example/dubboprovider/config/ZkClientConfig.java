@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class ZkClientConfig {
 
-    @Bean
+
     public ZkClient zkClient() {
         return new ZkClient("192.168.229.10");
     }
