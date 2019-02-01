@@ -9,6 +9,6 @@ public class ZkClientConfig {
 
 
     public ZkClient zkClient() {
-        return new ZkClient("192.168.229.10");
+        return new ZkClient("192.168.86.90");
     }
 }

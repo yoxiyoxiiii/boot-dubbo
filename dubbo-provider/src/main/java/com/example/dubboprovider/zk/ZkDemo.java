@@ -1,17 +1,19 @@
 package com.example.dubboprovider.zk;
 
+import com.example.dubboprovider.lock.ZkLockDto;
 import org.I0Itec.zkclient.IZkChildListener;
 import org.I0Itec.zkclient.IZkDataListener;
 import org.I0Itec.zkclient.ZkClient;
 import org.apache.zookeeper.CreateMode;
+import org.omg.CORBA.LongHolder;
 
-import java.util.List;
+import java.util.*;
 
 public class ZkDemo {
 
     public static void main(String[] args) throws InterruptedException {
 
-        ZkClient zkClient = new ZkClient("192.168.229.10");
+        ZkClient zkClient = new ZkClient("192.168.86.90");
 
 //        create(zkClient);
 //        update(zkClient);
@@ -19,9 +21,25 @@ public class ZkDemo {
 //        get(zkClient);
 
 //        createNodeEphemeral(zkClient);
-        createEphemeralSequential(zkClient);
+        ZkLockDto zkLockDto = createEphemeralSequential(zkClient);
 
-        Thread.sleep(60*1000L);
+
+
+            String s = "/lock/"+zkLockDto.getPath();
+            zkClient.subscribeDataChanges(s, new IZkDataListener() {
+                @Override
+                public void handleDataChange(String s, Object o) throws Exception {
+
+                }
+
+                @Override
+                public void handleDataDeleted(String s) throws Exception {
+                    System.out.println(s);
+                }
+            });
+           Thread.sleep(600*1000L);
+
+
     }
 
     /**
@@ -137,18 +155,31 @@ public class ZkDemo {
     /**
      * 创建有序临时节点
      */
-    public static void createEphemeralSequential(ZkClient zkClient) {
-            zkClient.createEphemeralSequential("/test1-","qaz1");
-            zkClient.createEphemeralSequential("/test2-","qaz2");
-            zkClient.createEphemeralSequential("/test3-","qaz3");
-            zkClient.createEphemeralSequential("/test4-","qa4");
+    public static ZkLockDto createEphemeralSequential(ZkClient zkClient) {
+            zkClient.createPersistent("/lock");
 
-        List<String> children = zkClient.getChildren("/");
-        zkClient.subscribeChildChanges("/test1-0000008", new IZkChildListener() {
-            @Override
-            public void handleChildChange(String parentPath, List<String> currentChilds) throws Exception {
+            zkClient.createPersistentSequential("/lock/test1-","qaz1");
+            zkClient.createPersistentSequential("/lock/test1-","qaz2");
+            zkClient.createPersistentSequential("/lock/test1-","qaz3");
+            zkClient.createPersistentSequential("/lock/test1-","qa4");
 
-            }
+        List<String> children = zkClient.getChildren("/lock");
+        Map<Long,ZkLockDto> lockDtoMap = new HashMap<>();
+        List<Long> longList = new ArrayList<>();
+        children.forEach(item->{
+            String[] paths = item.split("-");
+            ZkLockDto build = ZkLockDto.builder()
+                    .sid(paths[1])
+                    .id(Long.valueOf(paths[1]))
+                    .path(item)
+                    .prePath(paths[0])
+                    .build();
+            lockDtoMap.put(Long.valueOf(paths[1]),build);
+            longList.add(Long.valueOf(paths[1]));
         });
+        Long min = Collections.min(longList);
+        ZkLockDto zkLockDto = lockDtoMap.get(min);
+
+        return zkLockDto;
     }
 }
