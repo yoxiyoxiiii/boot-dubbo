@@ -23,9 +23,10 @@ public class DubboCustomerApplication {
 	private IRedis iRedis;
 
 	@GetMapping
-	public String add(HttpServletRequest httpServletRequest) throws InterruptedException {
+	public String add(HttpServletRequest httpServletRequest) throws Exception {
 		String ipAddress = getIpAddress(httpServletRequest);
-		iRedis.add(ipAddress);
+//		iRedis.add(ipAddress);
+		iRedis.addByCuratorLock(ipAddress);
 		return "sucess";
 	}
 

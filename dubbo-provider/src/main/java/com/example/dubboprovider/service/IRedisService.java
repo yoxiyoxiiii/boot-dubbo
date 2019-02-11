@@ -2,10 +2,12 @@ package com.example.dubboprovider.service;
 
 import com.example.dubbointerface.interfaces.IRedis;
 import com.example.dubboprovider.config.ZkClientConfig;
-import com.example.dubboprovider.lock.ZkLock;
 import com.example.dubboprovider.lock.ZkLockDto;
 import org.I0Itec.zkclient.IZkDataListener;
 import org.I0Itec.zkclient.ZkClient;
+import org.apache.curator.framework.CuratorFramework;
+import org.apache.curator.framework.recipes.locks.InterProcessMultiLock;
+import org.apache.curator.framework.recipes.locks.InterProcessMutex;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -102,6 +104,27 @@ public class IRedisService  implements IRedis {
             });
         }
 
+    }
+
+    @Autowired
+    private CuratorFramework curatorFramework;
+    @Override
+    public void addByCuratorLock(String ip) throws Exception {
+
+
+        //可重入锁（可在同步代码中再次获取锁） 分布式锁实现
+        InterProcessMutex lock = new InterProcessMutex(curatorFramework,"/testLok");
+
+        //获取锁
+        lock.acquire();
+        Integer test = (Integer) redisTemplate.opsForValue().get("test");
+        int value = test + 1 ;
+        redisTemplate.opsForValue().set("test", value);
+        Thread.sleep(1000L);
+        Integer test2 = (Integer) redisTemplate.opsForValue().get("test");
+        System.out.println("test2 = " +test2);
+        //业务处理完毕，释放锁
+        lock.release();
     }
 
 
